@@ -22,7 +22,7 @@ const app = {
 //creates noteCard divs to show the data
     generateNotesHTML: function() {
         const noteContainer = document.getElementById("container");
-        noteContainer.innerHTML = [];
+        noteContainer.innerHTML = "";
         for (let note of this.data.notes) {
         noteContainer.innerHTML += `
         <div class="noteCard">
@@ -42,12 +42,14 @@ const app = {
     //methods
 // Creates new notes, makes new notes on page reload
 createNote: function() { 
-    let newTitle = document.getElementById("newTitle").value;
-    let noteBody = document.getElementById("noteBody").value;
-    let newNote = {
-        title: newTitle,
-        body: noteBody
-    }
+    let newTitle = document.getElementById("newTitle").value.trim();
+    let noteBody = document.getElementById("noteBody").value.trim();
+
+    if (!newTitle && !noteBody) return; // Prevent empty notes
+
+    let newNote = { title: newTitle, body: noteBody };
+    let saveButton = document.querySelector('.saveNote');
+    saveButton.disabled = true; // Disable button to prevent spam
 
     fetch(this.data.url, {
         method: 'POST',
@@ -58,8 +60,14 @@ createNote: function() {
     .then(response => {
         this.data.notes = [];
         this.getNotes();
-    }) 
+        saveButton.disabled = false; // Re-enable button after request
+    })
+    .catch(err => {
+        console.error(err);
+        saveButton.disabled = false; // Re-enable button if error occurs
+    });
 },
+
 //Deletes notes
 deleteNote: function(noteId) { 
     console.log({noteId})
